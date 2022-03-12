@@ -33,16 +33,17 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     function Stake(uint256 amount) external {
+        checkout();
         IERC20(SKP).transferFrom(msg.sender, address(this), amount);
         safeMint(msg.sender, amount);
         return;
     }
 
     function Redeem() public returns(uint) {
+        checkout();
         uint bal = balanceOf(msg.sender);
         safeBurn(msg.sender, bal);
         IERC20(SKP).transfer(msg.sender, bal);
-
         return bal;
     }
 
@@ -78,7 +79,7 @@ contract StakeMonth is ERC20, Ownable {
         distributor.processAccount(msg.sender);
     }
 
-    function update() internal {
+    function checkout() internal {
         // add locked
         uint reward = calculateStateReward();
         bool success = IERC20(AKP).transfer(address(distributor), reward);
