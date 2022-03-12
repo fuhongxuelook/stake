@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./AKPDistributor.sol";
 
-
+// state token
 contract StakeMonth is ERC20, Ownable {
 
     using SafeMath for uint256;

@@ -6,6 +6,7 @@ import "./IterableMapping.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+// reward token 
 contract AKPDistributor is Ownable, DividendPayingToken {
 
     using SafeMath for uint256;
