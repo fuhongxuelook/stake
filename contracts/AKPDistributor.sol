@@ -21,7 +21,6 @@ contract AKPDistributor is Ownable, DividendPayingToken {
     uint256 public minimumTokenBalanceForDividends;
 
     event ExcludeFromDividends(address indexed account);
-    event ClaimWaitUpdated(uint256 indexed newValue, uint256 indexed oldValue);
 
     event Claim(address indexed account, uint256 amount);
 

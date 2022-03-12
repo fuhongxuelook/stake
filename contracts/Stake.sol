@@ -9,10 +9,13 @@ contract StakeMonth is ERC20, Ownable {
 
     using SafeMath for uint256;
 
-    address public constant SKPAddress = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
+    address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
 
     address public AKP;
     uint AKPDistributeAmount;
+    uint lastUpdateTime;
+    uint rateA = 10;
+    uint rateBase = 1000;
 
 
     AKPDistributor public distributor;
@@ -30,7 +33,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     function Stake(uint256 amount) external {
-        IERC20(SKPAddress).transferFrom(msg.sender, address(this), amount);
+        IERC20(SKP).transferFrom(msg.sender, address(this), amount);
         safeMint(msg.sender, amount);
         return;
     }
@@ -38,7 +41,7 @@ contract StakeMonth is ERC20, Ownable {
     function Redeem() public returns(uint) {
         uint bal = balanceOf(msg.sender);
         safeBurn(msg.sender, bal);
-        IERC20(SKPAddress).transfer(msg.sender, bal);
+        IERC20(SKP).transfer(msg.sender, bal);
 
         return bal;
     }
@@ -67,33 +70,33 @@ contract StakeMonth is ERC20, Ownable {
         distributor.setBalance(_account, balanceOf(_account));
     }
 
-    function handleCalculate() public {
-        uint256 AKPBalance = IERC20(AKP).balanceOf(address(this));
-
-        // add locked
-        if(AKPBalance >= AKPDistributeAmount) {
-            bool success = IERC20(AKP).transfer(address(distributor), AKPBalance);
-            if (success) {
-                distributor.distributeAKPDividends(AKPBalance);
-            }
-        }
-    }
 
     function claimAKPReward() public {
-        uint256 AKPBalance = IERC20(AKP).balanceOf(address(this));
-
-        // add locked
-        if(AKPBalance >= AKPDistributeAmount) {
-            bool success = IERC20(AKP).transfer(address(distributor), AKPBalance);
-            if (success) {
-                distributor.distributeAKPDividends(AKPBalance);
-            }
-        }
-
         uint withdrawAbleAmount = distributor.withdrawableDividendOf(msg.sender);
         require(withdrawAbleAmount > 0, "ERROR : insufficient Amount");
 
         distributor.processAccount(msg.sender);
+    }
+
+    function update() internal {
+        // add locked
+        uint reward = calculateStateReward();
+        bool success = IERC20(AKP).transfer(address(distributor), reward);
+        if (success) {
+            distributor.distributeAKPDividends(reward);
+        }
+    }
+
+    function calculateStateReward() internal view returns(uint256) {
+        if(lastUpdateTime == 0) {
+            return 0;
+        }
+
+        uint stakeTime = block.timestamp.sub(lastUpdateTime);
+        uint skpBal = IERC20(SKP).balanceOf(address(this));
+        return stakeTime.mul(skpBal).mul(rateA).div(rateBase);
+
+
     }
 
     function getTotalDividendsDistributed() external view returns (uint256) {
