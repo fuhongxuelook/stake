@@ -32,6 +32,10 @@ contract StakeMonth is ERC20, Ownable {
         distributor = new AKPDistributor(_akp);
     }
 
+    function decimals() public view virtual override returns (uint8) {
+        return 9;
+    }
+
     function Stake(uint256 amount) external {
         checkout();
         IERC20(SKP).transferFrom(msg.sender, address(this), amount);

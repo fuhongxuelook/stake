@@ -27,6 +27,10 @@ contract AKPDistributor is Ownable, DividendPayingToken {
     constructor(address _akp) DividendPayingToken("AKP_Distributor", "AKP_Distributor", _akp) {
     }
 
+    function decimals() public view virtual override returns (uint8) {
+        return 9;
+    }
+
     function _transfer(address, address, uint256) internal pure override {
         require(false, "Dividend_Tracker: No transfers allowed");
     }
