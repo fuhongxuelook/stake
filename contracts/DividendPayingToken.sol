@@ -6,8 +6,8 @@ pragma solidity ^0.8.0;
 import "./SafeMathUint.sol";
 import "./SafeMathInt.sol";
 import "./DividendPayingTokenInterface.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./DividendPayingTokenOptionalInterface.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -23,11 +23,8 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
   using SafeMath for uint256;
   using SafeMathUint for uint256;
   using SafeMathInt for int256;
- 
-  // MUMBAI
-  // address public  SHIB = 0xcB1e72786A6eb3b44C2a2429e317c8a2462CFeb1; 
- 
-  address SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
+
+  address AKP;
 
 
   // With `magnitude`, we can properly distribute dividends even if the amount of received ether is small.
@@ -58,11 +55,12 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
 
   uint256 public totalDividendsDistributed;
 
-  constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) {
+  constructor(string memory _name, string memory _symbol, address _akp) ERC20(_name, _symbol) {
+    AKP = _akp;
   }
 
 
-  function distributeSHIBDividends(uint256 amount) public onlyOwner{
+  function distributeAKPDividends(uint256 amount) public onlyOwner{
      uint total = totalSupply();
      if (total == 0) {
        total = 1;
@@ -91,7 +89,7 @@ contract DividendPayingToken is ERC20, Ownable, DividendPayingTokenInterface, Di
     if (_withdrawableDividend > 0) {
       withdrawnDividends[user] = withdrawnDividends[user].add(_withdrawableDividend);
       emit DividendWithdrawn(user, _withdrawableDividend);
-      bool success = IERC20(SHIB).transfer(user, _withdrawableDividend);
+      bool success = IERC20(AKP).transfer(user, _withdrawableDividend);
 
       if(!success) {
         withdrawnDividends[user] = withdrawnDividends[user].sub(_withdrawableDividend);
