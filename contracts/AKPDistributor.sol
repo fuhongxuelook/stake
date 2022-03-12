@@ -4,20 +4,15 @@ pragma solidity ^0.8.0;
 import "./DividendPayingToken.sol";
 import "./IterableMapping.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 // reward token 
 contract AKPDistributor is Ownable, DividendPayingToken {
 
-    using SafeMath for uint256;
-    using SafeMathInt for int256;
     using IterableMapping for IterableMapping.Map;
 
     IterableMapping.Map private tokenHoldersMap;
 
     mapping (address => bool) public excludedFromDividends;
-
-    mapping (address => uint256) public lastClaimTimes;
 
     uint256 public minimumTokenBalanceForDividends;
 
