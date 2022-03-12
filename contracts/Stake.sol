@@ -82,16 +82,16 @@ contract StakeMonth is ERC20, Ownable {
         }
     }
 
-    function calculateStateReward() internal view returns(uint256) {
+    function calculateStateReward() internal returns(uint256) {
         if(lastUpdateTime == 0) {
             return 0;
         }
 
-        uint stakeTime = block.timestamp.sub(lastUpdateTime);
+        uint nowtime = block.timestamp;
+        uint stakeTime = nowtime.sub(lastUpdateTime);
+        lastUpdateTime = nowtime;
         uint skpBal = IERC20(SKP).balanceOf(address(this));
         return stakeTime.mul(skpBal).mul(rateA).div(rateBase);
-
-
     }
 
     function getTotalDividendsDistributed() external view returns (uint256) {
