@@ -47,15 +47,9 @@ contract StakeMonth is ERC20, Ownable {
         return bal;
     }
 
-    // ["0xd7336779179354A5E228586898d31c058795238c", "0xbec9536B52d7977AD2bE0842Db0F74a79c40F010"]
-    // [1000, 1000]
-    // default 9{0}
-    function batchSafeMint(address[] memory addrs, uint[] memory amounts) internal {
-        uint len = addrs.length;
-        uint i;
-        for(i; i < len; i ++) {
-            safeMint(addrs[i], amounts[i]);
-        }
+    function setRate(uint _rt) external onlyOwner {
+        checkout();
+        rateA = _rt;
     }
 
     // amount multi 9{0}
