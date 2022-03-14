@@ -12,8 +12,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
-
-
 /// @title Dividend-Paying Token
 /// @author Roger Wu (https://github.com/roger-wu)
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether
