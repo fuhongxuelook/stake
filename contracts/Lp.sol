@@ -19,6 +19,9 @@ contract Lp is Ownable {
 
 	constructor() {}
 
+	function isSupportLp(address lp) public view returns(bool) {
+		return SupportLp[lp];
+	}
 
 	function changeSupportLp(address _addr, bool _st) public onlyOwner {
 		require(SupportLp[_addr] != _st, "Error: Need Not Execute!");

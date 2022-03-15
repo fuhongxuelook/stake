@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./AKPDistributor.sol";
+import "./SHIBDistributor.sol";
 
 // state token
 contract StakeMonth is ERC20, Ownable {
@@ -10,7 +11,7 @@ contract StakeMonth is ERC20, Ownable {
     using SafeMath for uint256;
 
     address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
-
+    address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
     address public AKP;
 
     uint public AKPMintAmount;
@@ -21,7 +22,8 @@ contract StakeMonth is ERC20, Ownable {
     uint rateBase = 100000;
 
 
-    AKPDistributor public distributor;
+    AKPDistributor public AkpDistributor;
+    SHIBDistributor public ShibDistributor;
 
     event STAKE(address indexed staker, uint amount, uint timestamp);
 
@@ -33,7 +35,8 @@ contract StakeMonth is ERC20, Ownable {
 
     constructor(address _akp) ERC20("SKP-Stake", "SKP-Stake") {
         AKP = _akp;
-        distributor = new AKPDistributor(_akp);
+        AkpDistributor = new AKPDistributor(_akp);
+        ShibDistributor = new SHIBDistributor();
     }
 
     function decimals() public view virtual override returns (uint8) {
@@ -53,7 +56,6 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     function StakeLp(address lp, uint amount) external {
-        
     }
 
     // redeem all staked SKP Token
@@ -69,43 +71,69 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // set apy 
-    function setRate(uint _rt) external onlyOwner {
+    function setTimeFactor(uint _tf) external onlyOwner {
         checkout();
-        rateA = _rt;
+        timeFactor = _tf;
     }
 
-    // mint distributor token to receive AKP
+    // mint AkpDistributor token to receive AKP
     function safeMint(address _account, uint256 _amount) internal {
         _mint(_account, _amount);
-        distributor.setBalance(_account, balanceOf(_account));
+        AkpDistributor.setBalance(_account, balanceOf(_account));
     }
 
-    // burn distributor token
+    // burn AkpDistributor token
     function safeBurn(address _account, uint256 _amount) private {
         uint bal = balanceOf(_account);
         require(bal >= _amount, "burn amount exceed");
         _burn(_account, _amount);
-        distributor.setBalance(_account, balanceOf(_account));
+        AkpDistributor.setBalance(_account, balanceOf(_account));
     }
 
+    // claim shib and akp
+    function claimRewards() public {
+        claimAKPReward();
+        claimSHIBReward();
+    }
 
-    // claim reward
-    function claimAKPReward() public {
-        uint withdrawAbleAmount = distributor.withdrawableDividendOf(msg.sender);
+    // claim AKP reward
+    function claimAKPReward() internal {
+        uint withdrawAbleAmount = AkpDistributor.withdrawableDividendOf(msg.sender);
         require(withdrawAbleAmount > 0, "ERROR : insufficient Amount");
+        AkpDistributor.processAccount(msg.sender);
+    }
 
-        distributor.processAccount(msg.sender);
+    // claim AKP reward
+    function claimSHIBReward() internal {
+        uint withdrawAbleAmount = ShibDistributor.withdrawableDividendOf(msg.sender);
+        if(withdrawAbleAmount > 0) {
+            ShibDistributor.processAccount(msg.sender);
+        } 
     }
 
     // checkout period reward
     function checkout() public {
         // add locked
         uint reward = calculateStateReward();
-        bool success = IERC20(AKP).transfer(address(distributor), reward);
+        if(reward == 0) {
+            return;
+        }
+        bool success = IERC20(AKP).transfer(address(AkpDistributor), reward);
         if (success) {
             AKPMintAmount = AKPMintAmount.add(reward);
-            distributor.distributeAKPDividends(reward);
+            AkpDistributor.distributeTokenDividends(reward);
         }
+
+        uint shibBalance = IERC20(SHIB).balanceOf(address(this));
+        if(shibBalance == 0) {
+            return;
+        }
+
+        success = IERC20(SHIB).transfer(address(ShibDistributor), shibBalance);
+        if (success) {
+            ShibDistributor.distributeTokenDividends(reward);
+        }
+
     }
 
     // calculate reward
@@ -120,23 +148,23 @@ contract StakeMonth is ERC20, Ownable {
         uint skpBal = IERC20(SKP).balanceOf(address(this));
 
         lastUpdateTime = nowtime;
-        return stakeTime.mul(skpBal).mul(rateA).div(rateBase);
+        return stakeTime.mul(skpBal).mul(timeFactor).div(rateBase);
     }
 
-    function getTotalDividendsDistributed() external view returns (uint256) {
-        return distributor.totalDividendsDistributed();
+    function getAKPTotalDistributed() external view returns (uint256) {
+        return AkpDistributor.totalDividendsDistributed();
     }
 
-    function withdrawableDividendOf(address account) public view returns(uint256) {
-        return distributor.withdrawableDividendOf(account);
+    function withdrawableAKPOf(address account) public view returns(uint256) {
+        return AkpDistributor.withdrawableDividendOf(account);
     }
 
-    function dividendTokenBalanceOf(address account) public view returns (uint256) {
-        return distributor.balanceOf(account);
+    function AkpDistributorBalanceOf(address account) public view returns (uint256) {
+        return AkpDistributor.balanceOf(account);
     }
 
-    function getNumberOfDividendTokenHolders() external view returns(uint256) {
-        return distributor.getNumberOfTokenHolders();
+    function getNumberOfAkpDistributorHolders() external view returns(uint256) {
+        return AkpDistributor.getNumberOfTokenHolders();
     }
 
 }
