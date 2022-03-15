@@ -6,8 +6,9 @@ import "./AKPDistributor.sol";
 import "./SHIBDistributor.sol";
 import "./LPManager.sol";
 
-// state token
-contract StakeMonth is ERC20, Ownable {
+// stake lp and redeem lp
+// stake lp can't get SHIB
+contract StakeLp is ERC20, Ownable {
 
     using SafeMath for uint256;
 
@@ -46,20 +47,7 @@ contract StakeMonth is ERC20, Ownable {
         return 9;
     }
 
-    // need approve before stake
-    function Stake(uint256 amount) external {
-        // save gas
-        address addr = msg.sender;
-        checkout();
-        IERC20(SKP).transferFrom(addr, address(this), amount);
-        safeMint(addr, amount);
-        SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
-        emit STAKE(addr, amount, block.timestamp);
-        return;
-    }
-
-
-    function StakeLp(address lp, uint amount) external {
+    function Stake(address lp, uint amount) external {
         uint lpReflectSkpAmount = LpManager.getSkpNumberInSkp(lp, amount);
         require(lpReflectSkpAmount > 0, "skp amount cant be zero");
 
@@ -156,7 +144,7 @@ contract StakeMonth is ERC20, Ownable {
 
         success = IERC20(SHIB).transfer(address(ShibDistributor), shibBalance);
         if (success) {
-            ShibDistributor.distributeTokenDividends(shibBalance);
+            ShibDistributor.distributeTokenDividends(reward);
         }
 
     }

@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // state token
-contract Lp is Ownable {
+contract LPManager is Ownable {
 
 	using SafeMath for uint256;
 
@@ -23,7 +23,7 @@ contract Lp is Ownable {
 		return SupportLp[lp];
 	}
 
-	function changeSupportLp(address _addr, bool _st) public onlyOwner {
+	function changeSupportLp(address _addr, bool _st) external onlyOwner {
 		require(SupportLp[_addr] != _st, "Error: Need Not Execute!");
 		SupportLp[_addr] = _st;
 	}
