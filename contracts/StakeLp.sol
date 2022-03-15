@@ -5,15 +5,15 @@ pragma solidity ^0.8.0;
 import "./AKPDistributor.sol";
 import "./SHIBDistributor.sol";
 import "./LPManager.sol";
+import "./StakeLpInterface.sol";
 
 // stake lp and redeem lp
 // stake lp can't get SHIB
-contract StakeLp is ERC20, Ownable {
+contract StakeLp is ERC20, Ownable, StakeLpInterface {
 
     using SafeMath for uint256;
 
     address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
-    address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
     address public AKP;
 
     uint public AKPMintAmount;
@@ -25,21 +25,11 @@ contract StakeLp is ERC20, Ownable {
 
 
     AKPDistributor public AkpDistributor;
-    SHIBDistributor public ShibDistributor;
     LPManager public LpManager;
-
-    event STAKE(address indexed staker, uint amount, uint timestamp);
-
-    event REDEEM(
-        address indexed redeemer, 
-        uint amount,
-        uint timestamp
-    );
 
     constructor(address _akp) ERC20("SKP-LP-Stake", "SKP-LP-Stake") {
         AKP = _akp;
         AkpDistributor = new AKPDistributor(_akp);
-        ShibDistributor = new SHIBDistributor();
         LpManager = new LPManager(); 
     }
 
@@ -47,7 +37,14 @@ contract StakeLp is ERC20, Ownable {
         return 9;
     }
 
-    function Stake(address lp, uint amount) external {
+    // lock transfer
+    function _transfer(address from, address to, uint256 amount) internal virtual override {
+        require(false, "cant transfer");
+        super._transfer(from, to, amount);
+    }
+
+    // need be approved
+    function Stake(address lp, uint amount) external virtual override {
         uint lpReflectSkpAmount = LpManager.getSkpNumberInSkp(lp, amount);
         require(lpReflectSkpAmount > 0, "skp amount cant be zero");
 
@@ -62,7 +59,7 @@ contract StakeLp is ERC20, Ownable {
 
 
     // redeem all staked SKP Token
-    function Redeem() public returns(uint) {
+    function Redeem() external virtual override returns(uint) {
         checkout();
         // save gas
         address addr = msg.sender;
@@ -91,22 +88,19 @@ contract StakeLp is ERC20, Ownable {
     function safeMint(address _account, uint256 _amount) internal {
         _mint(_account, _amount);
         AkpDistributor.setBalance(_account, balanceOf(_account));
-        ShibDistributor.setBalance(_account, balanceOf(_account));
     }
 
     // burn AkpDistributor token
-    function safeBurn(address _account, uint256 _amount) private {
+    function safeBurn(address _account, uint256 _amount) internal {
         uint bal = balanceOf(_account);
         require(bal >= _amount, "burn amount exceed");
         _burn(_account, _amount);
         AkpDistributor.setBalance(_account, balanceOf(_account));
-        ShibDistributor.setBalance(_account, balanceOf(_account));
     }
 
-    // claim shib and akp
-    function claimRewards() public {
+    // claim akp
+    function claimRewards() external virtual override {
         claimAKPReward();
-        claimSHIBReward();
     }
 
     // claim AKP reward
@@ -114,14 +108,6 @@ contract StakeLp is ERC20, Ownable {
         uint withdrawAbleAmount = AkpDistributor.withdrawableDividendOf(msg.sender);
         require(withdrawAbleAmount > 0, "ERROR : insufficient Amount");
         AkpDistributor.processAccount(msg.sender);
-    }
-
-    // claim AKP reward
-    function claimSHIBReward() internal {
-        uint withdrawAbleAmount = ShibDistributor.withdrawableDividendOf(msg.sender);
-        if(withdrawAbleAmount > 0) {
-            ShibDistributor.processAccount(msg.sender);
-        } 
     }
 
     // checkout period reward
@@ -135,16 +121,6 @@ contract StakeLp is ERC20, Ownable {
         if (success) {
             AKPMintAmount = AKPMintAmount.add(reward);
             AkpDistributor.distributeTokenDividends(reward);
-        }
-
-        uint shibBalance = IERC20(SHIB).balanceOf(address(this));
-        if(shibBalance == 0) {
-            return;
-        }
-
-        success = IERC20(SHIB).transfer(address(ShibDistributor), shibBalance);
-        if (success) {
-            ShibDistributor.distributeTokenDividends(reward);
         }
 
     }

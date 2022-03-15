@@ -95,9 +95,7 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         if (success) {
             ShibDistributor.distributeTokenDividends(shibBalance);
         }
-
     }
-
 
     function getSHIBTotalDistributed() external view returns (uint256) {
         return ShibDistributor.totalDividendsDistributed();
