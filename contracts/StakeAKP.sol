@@ -37,6 +37,16 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     function decimals() public view virtual override returns (uint8) {
         return 9;
+    }   
+
+    // transfor stake-token
+    function _transfer(address from, address to, uint256 amount) internal virtual override {
+        super._transfer(from, to, amount);
+        AkpDistributor.setBalance(from, balanceOf(from));
+        ShibDistributor.setBalance(from, balanceOf(from));
+
+        AkpDistributor.setBalance(to, balanceOf(to));
+        ShibDistributor.setBalance(to, balanceOf(to));
     }
 
     // need approve before stake

@@ -3,6 +3,8 @@
 pragma solidity ^0.8.0;
 
 import "./SHIBDistributor.sol";
+import "./StakeInterface.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // state token
 contract StakeMonth is ERC20, Ownable {
@@ -11,6 +13,7 @@ contract StakeMonth is ERC20, Ownable {
 
     address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
     address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
+    address public Mine;
 
     uint public SKPTotalStakedAmount;
 
@@ -31,6 +34,14 @@ contract StakeMonth is ERC20, Ownable {
     function decimals() public view virtual override returns (uint8) {
         return 9;
     }
+
+    // lock transfer
+    function _transfer(address from, address to, uint256 amount) internal virtual override {
+        require(false, "cant transfer");
+
+        super._transfer(from, to, amount);
+    }
+
 
     // need approve before stake
     function Stake(uint256 amount) external {
@@ -115,8 +126,28 @@ contract StakeMonth is ERC20, Ownable {
         return ShibDistributor.getNumberOfTokenHolders();
     }
 
-    function migrate() external onlyOwner {
-        
+    function migrate(address[] memory stakers) external onlyOwner {
+        uint len = stakers.length;
+        uint i = 0;
+        for(i; i < len; i ++ ) {
+            _migrate(stakers[i]);
+        }
+    }
+
+    function _migrate(address staker) internal {
+        uint preStakeAmount = balanceOf(staker);
+
+        IERC20(SKP).approve(Mine, preStakeAmount);
+        StakeInterface(Mine).Stake(preStakeAmount);
+        safeBurn(staker, preStakeAmount);
+        IERC20(Mine).transfer(staker, preStakeAmount);
+    }
+
+    function setMineAddress(address mine) external onlyOwner {
+        require(mine != address(0), "Cant be zero address");
+        require(Mine != mine, "has been set");
+
+        Mine = mine;
     }
 
 }
