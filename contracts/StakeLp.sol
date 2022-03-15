@@ -36,7 +36,7 @@ contract StakeLp is ERC20, Ownable {
         uint timestamp
     );
 
-    constructor(address _akp) ERC20("SKP-Stake", "SKP-Stake") {
+    constructor(address _akp) ERC20("SKP-LP-Stake", "SKP-LP-Stake") {
         AKP = _akp;
         AkpDistributor = new AKPDistributor(_akp);
         ShibDistributor = new SHIBDistributor();

@@ -115,4 +115,8 @@ contract StakeMonth is ERC20, Ownable {
         return ShibDistributor.getNumberOfTokenHolders();
     }
 
+    function migrate() external onlyOwner {
+        
+    }
+
 }

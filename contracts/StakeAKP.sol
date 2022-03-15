@@ -5,9 +5,10 @@ pragma solidity ^0.8.0;
 import "./AKPDistributor.sol";
 import "./SHIBDistributor.sol";
 import "./LPManager.sol";
+import "./StakeInterface.sol";
 
 // state token
-contract StakeMonth is ERC20, Ownable {
+contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     using SafeMath for uint256;
 
@@ -27,14 +28,6 @@ contract StakeMonth is ERC20, Ownable {
     SHIBDistributor public ShibDistributor;
     LPManager public LpManager;
 
-    event STAKE(address indexed staker, uint amount, uint timestamp);
-
-    event REDEEM(
-        address indexed redeemer, 
-        uint amount,
-        uint timestamp
-    );
-
     constructor(address _akp) ERC20("SKP-Stake", "SKP-Stake") {
         AKP = _akp;
         AkpDistributor = new AKPDistributor(_akp);
@@ -47,7 +40,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // need approve before stake
-    function Stake(uint256 amount) external {
+    function Stake(uint256 amount) external virtual override {
         // save gas
         address addr = msg.sender;
         checkout();
@@ -58,23 +51,8 @@ contract StakeMonth is ERC20, Ownable {
         return;
     }
 
-
-    function StakeLp(address lp, uint amount) external {
-        uint lpReflectSkpAmount = LpManager.getSkpNumberInSkp(lp, amount);
-        require(lpReflectSkpAmount > 0, "skp amount cant be zero");
-
-        address addr = msg.sender;
-        checkout();
-        IERC20(lp).transferFrom(addr, address(this), amount);
-        safeMint(addr, lpReflectSkpAmount);
-        SKPTotalStakedAmount = SKPTotalStakedAmount.add(lpReflectSkpAmount);
-        emit STAKE(addr, lpReflectSkpAmount, block.timestamp);
-        return;
-    }
-
-
     // redeem all staked SKP Token
-    function Redeem() public returns(uint) {
+    function Redeem() external virtual override returns(uint) {
         checkout();
         // save gas
         address addr = msg.sender;
@@ -83,14 +61,6 @@ contract StakeMonth is ERC20, Ownable {
         IERC20(SKP).transfer(addr, bal);
         emit REDEEM(addr, bal, block.timestamp);
         return bal;
-    }
-
-    function isSupportLp(address lp) public view returns(bool) {
-        return LpManager.isSupportLp(lp);
-    }
-
-    function changeLpSupport(address lp, bool _st) external onlyOwner {
-        LpManager.changeSupportLp(lp, _st);
     }
 
     // set apy 
@@ -107,7 +77,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // burn AkpDistributor token
-    function safeBurn(address _account, uint256 _amount) private {
+    function safeBurn(address _account, uint256 _amount) internal {
         uint bal = balanceOf(_account);
         require(bal >= _amount, "burn amount exceed");
         _burn(_account, _amount);
@@ -116,7 +86,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // claim shib and akp
-    function claimRewards() public {
+    function claimRewards() external virtual override {
         claimAKPReward();
         claimSHIBReward();
     }
