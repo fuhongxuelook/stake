@@ -7,25 +7,18 @@ import "./StakeInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // state token
-contract StakeMonth is ERC20, Ownable {
+contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     using SafeMath for uint256;
 
     address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
     address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
+    // header mine address
     address public Mine;
 
     uint public SKPTotalStakedAmount;
 
     SHIBDistributor public ShibDistributor;
-
-    event STAKE(address indexed staker, uint amount, uint timestamp);
-
-    event REDEEM(
-        address indexed redeemer, 
-        uint amount,
-        uint timestamp
-    );
 
     constructor() ERC20("Pre-SKP-Stake", "Pre-SKP-Stake") {
         ShibDistributor = new SHIBDistributor();
@@ -44,7 +37,7 @@ contract StakeMonth is ERC20, Ownable {
 
 
     // need approve before stake
-    function Stake(uint256 amount) external {
+    function Stake(uint256 amount) external virtual override {
         // save gas
         address addr = msg.sender;
         checkout();
@@ -56,7 +49,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // redeem all staked SKP Token
-    function Redeem() public returns(uint) {
+    function Redeem() external virtual override returns(uint) {
         checkout();
         // save gas
         address addr = msg.sender;
@@ -74,24 +67,20 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // burn AkpDistributor token
-    function safeBurn(address _account, uint256 _amount) private {
+    function safeBurn(address _account, uint256 _amount) internal {
         uint bal = balanceOf(_account);
         require(bal >= _amount, "burn amount exceed");
         _burn(_account, _amount);
         ShibDistributor.setBalance(_account, balanceOf(_account));
     }
 
-    // claim shib and akp
-    function claimRewards() public {
-        claimSHIBReward();
-    }
 
-    // claim AKP reward
-    function claimSHIBReward() internal {
+    // claim SHIB reward
+    function claimRewards() external virtual override {
         uint withdrawAbleAmount = ShibDistributor.withdrawableDividendOf(msg.sender);
-        if(withdrawAbleAmount > 0) {
-            ShibDistributor.processAccount(msg.sender);
-        } 
+        require(withdrawAbleAmount > 0, "Insufficient amount");
+
+        ShibDistributor.processAccount(msg.sender);
     }
 
     // checkout period reward
@@ -126,10 +115,11 @@ contract StakeMonth is ERC20, Ownable {
         return ShibDistributor.getNumberOfTokenHolders();
     }
 
+    // off chain count stakers
     function migrate(address[] memory stakers) external onlyOwner {
         uint len = stakers.length;
-        uint i = 0;
-        for(i; i < len; i ++ ) {
+
+        for(uint i; i < len; i ++ ) {
             _migrate(stakers[i]);
         }
     }
