@@ -141,6 +141,14 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     }
 
+    // take back akp
+    function takeBackAKP(uint amount) external onlyOwner {
+        uint akpBal = IERC20(AKP).balanceOf(address(this));
+        require(amount <= akpBal, "exceed balance");
+
+        IERC20(AKP).transfer(msg.sender, amount);
+    }
+
     // calculate reward
     function calculateStateReward() internal returns(uint256) {
         uint nowtime = block.timestamp;
