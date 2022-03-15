@@ -11,6 +11,8 @@ contract Lp is Ownable {
 
 	using SafeMath for uint256;
 
+	uint public factor = 2;
+
 	address SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
 
 	mapping(address => bool) public SupportLp;
@@ -21,6 +23,13 @@ contract Lp is Ownable {
 	function changeSupportLp(address _addr, bool _st) public onlyOwner {
 		require(SupportLp[_addr] != _st, "Error: Need Not Execute!");
 		SupportLp[_addr] = _st;
+	}
+
+	function setFactor(uint _newfactor) public onlyOwner {
+		require(factor != _newfactor, "Error: Need Not Execute!");
+		require(factor > 0, "factor can be zero");
+
+		factor = _newfactor;
 	}
 
 	// get the number of skp in lp
@@ -46,7 +55,7 @@ contract Lp is Ownable {
 	function getSkpNumberInSkp(address lp, uint amount) public view returns(uint) {
 		uint lpSkpNumber = getLpTokenNumber(lp, amount);
 
-		return uint(2).mul(lpSkpNumber);
+		return factor.mul(lpSkpNumber);
 	}
 
 }

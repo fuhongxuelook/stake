@@ -17,8 +17,8 @@ contract StakeMonth is ERC20, Ownable {
     uint public SKPTotalStakedAmount;
 
     uint lastUpdateTime;
-    uint rateA = 10;
-    uint rateBase = 1000;
+    uint timeFactor;
+    uint rateBase = 100000;
 
 
     AKPDistributor public distributor;
@@ -50,6 +50,10 @@ contract StakeMonth is ERC20, Ownable {
         SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
         emit STAKE(addr, amount, block.timestamp);
         return;
+    }
+
+    function StakeLp(address lp, uint amount) external {
+        
     }
 
     // redeem all staked SKP Token
@@ -94,7 +98,7 @@ contract StakeMonth is ERC20, Ownable {
     }
 
     // checkout period reward
-    function checkout() internal {
+    function checkout() public {
         // add locked
         uint reward = calculateStateReward();
         bool success = IERC20(AKP).transfer(address(distributor), reward);
