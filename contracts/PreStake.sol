@@ -2,26 +2,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./SHIBDistributor.sol";
+import "./Distributor.sol";
 import "./StakeInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // state token
-contract StakeMonth is ERC20, Ownable, StakeInterface {
+contract PreStake is ERC20, Ownable, StakeInterface {
 
     using SafeMath for uint256;
 
-    address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
-    address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
+    // bsc mainnet
+    // address public constant SKP = 0xCd79B84A0611971727928e1b7aEe9f8C61EDE777;
+    // address public SHIB = 0x2859e4544C4bB03966803b044A93563Bd2D0DD4D;
+
+    // bsc testnet
+    address public constant SKP = 0x60450e4F1246fedb38F83062BCB2BebAab6d110B;
+    address public SHIB = 0x8a9424745056Eb399FD19a0EC26A14316684e274;
+
     // header mine address
     address public Mine;
 
     uint public SKPTotalStakedAmount;
 
-    SHIBDistributor public ShibDistributor;
+    Distributor public ShibDistributor;
 
     constructor() ERC20("Pre-SKP-Stake", "Pre-SKP-Stake") {
-        ShibDistributor = new SHIBDistributor();
+        ShibDistributor = new Distributor(
+            "SHIB_Distributor",
+            "SHIB_Distributor",
+            SHIB
+        );
     }
 
     function decimals() public view virtual override returns (uint8) {
