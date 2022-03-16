@@ -138,7 +138,6 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         if (success) {
             ShibDistributor.distributeTokenDividends(shibBalance);
         }
-
     }
 
     // take back akp
