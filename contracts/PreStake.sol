@@ -21,8 +21,10 @@ contract PreStake is ERC20, Ownable, StakeInterface {
 
     // header mine address
     address public Mine;
+    uint public minimumStake = 1_000_000_000; // 10e
 
     uint public SKPTotalStakedAmount;
+    bool canRedeem;
 
     Distributor public ShibDistributor;
 
@@ -45,12 +47,24 @@ contract PreStake is ERC20, Ownable, StakeInterface {
         super._transfer(from, to, amount);
     }
 
+    function setMinimum(uint256 amount) external onlyOwner{
+        minimumStake = amount;
+    }
+
+    function changeCanRedeem(bool st) external onlyOwner {
+        require(canRedeem != st, "already set");
+        canRedeem = st;
+    }
+
 
     // need approve before stake
     function Stake(uint256 amount) external virtual override {
         // save gas
         address addr = msg.sender;
         checkout();
+
+        require(amount >= minimumStake, "Amount not enough");
+
         IERC20(SKP).transferFrom(addr, address(this), amount);
         safeMint(addr, amount);
         SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
@@ -60,6 +74,8 @@ contract PreStake is ERC20, Ownable, StakeInterface {
 
     // redeem all staked SKP Token
     function Redeem() external virtual override returns(uint) {
+        require(canRedeem, "Cant Redeem");
+
         checkout();
         // save gas
         address addr = msg.sender;
@@ -132,6 +148,7 @@ contract PreStake is ERC20, Ownable, StakeInterface {
         }
     }
 
+    // migrate to head mine
     function _migrate(address staker) internal {
         uint preStakeAmount = balanceOf(staker);
 
@@ -141,11 +158,22 @@ contract PreStake is ERC20, Ownable, StakeInterface {
         IERC20(Mine).transfer(staker, preStakeAmount);
     }
 
+    // set head mine address
     function setMineAddress(address mine) external onlyOwner {
         require(mine != address(0), "Cant be zero address");
         require(Mine != mine, "has been set");
 
         Mine = mine;
+    }
+
+    // free to migrate any mine
+    function freeMigrate(address mine, address staker) external {
+        uint preStakeAmount = balanceOf(staker);
+
+        IERC20(SKP).approve(mine, preStakeAmount);
+        StakeInterface(mine).Stake(preStakeAmount);
+        safeBurn(staker, preStakeAmount);
+        IERC20(mine).transfer(staker, preStakeAmount);
     }
 
 }
