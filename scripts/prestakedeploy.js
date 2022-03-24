@@ -11,15 +11,27 @@ async function main() {
   //
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
-  // await hre.run('compile');
+
+  await hre.run('compile');
 
   // We get the contract to deploy
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const Lib = await hre.ethers.getContractFactory("IterableMapping");
+  const lib = await Lib.deploy();
 
-  await greeter.deployed();
+  await lib.deployed();
 
-  console.log("Greeter deployed to:", greeter.address);
+  console.log("Lib deployed to:", lib.address);
+  // We get the contract to deploy
+  const Obj = await hre.ethers.getContractFactory("PreStake", {
+    libraries: {
+      IterableMapping: lib.address,
+    }
+  });
+  const prestake = await Obj.deploy();
+
+  await prestake.deployed();
+
+  console.log("PreStake deployed to:", prestake.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -58,6 +58,8 @@ contract PreStake is ERC20, Ownable, StakeInterface {
 
 
     // need approve before stake
+    // It can gain shib reward
+    // so we mint token to gain shib
     function Stake(uint256 amount) external virtual override {
         // save gas
         address addr = msg.sender;
@@ -67,6 +69,7 @@ contract PreStake is ERC20, Ownable, StakeInterface {
 
         IERC20(SKP).transferFrom(addr, address(this), amount);
         safeMint(addr, amount);
+
         SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
         emit STAKE(addr, amount, block.timestamp);
         return;
@@ -167,6 +170,7 @@ contract PreStake is ERC20, Ownable, StakeInterface {
     }
 
     // free to migrate any mine
+    // when stale is over, can migrate to any mine
     function freeMigrate(address mine, address staker) external {
         uint preStakeAmount = balanceOf(staker);
 

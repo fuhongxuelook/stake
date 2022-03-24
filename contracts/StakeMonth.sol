@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./AKPDistributor.sol";
-import "./SHIBDistributor.sol";
+import "./Distributor.sol";
 import "./LPManager.sol";
 import "./StakeInterface.sol";
 
@@ -29,16 +28,28 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
     uint timeFactor;
     uint rateBase = 100000;
 
+    uint lastBlockNumber;
 
-    AKPDistributor public AkpDistributor;
-    SHIBDistributor public ShibDistributor;
-    LPManager public LpManager;
+    uint staketime = 30 days;
 
-    constructor(address _akp) ERC20("SKP-Stake", "SKP-Stake") {
+    struct StakedItem {
+        uint StartAt;
+        uint Amount;
+    }
+
+    struct StakedList {
+        StakedItem[] List;
+    }
+
+    mapping(address => StakedList) addrStakedList;
+
+    Distributor public AkpDistributor;
+    Distributor public ShibDistributor;
+
+    constructor(address _akp) ERC20("SKP-Stake-Month", "SKP-Stake-Month") {
         AKP = _akp;
-        AkpDistributor = new AKPDistributor(_akp);
-        ShibDistributor = new SHIBDistributor();
-        LpManager = new LPManager(); 
+        AkpDistributor = new Distributor("AKP_Distributor", "AKP_Distributor", AKP);
+        ShibDistributor = new Distributor("SHIB_Distributor", "SHIB_Distributor", SHIB);
     }
 
     function decimals() public view virtual override returns (uint8) {
@@ -47,10 +58,14 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     // transfor stake-token
     function _transfer(address from, address to, uint256 amount) internal virtual override {
+        // stake token
         super._transfer(from, to, amount);
+
+        // gain akp reward token
         AkpDistributor.setBalance(from, balanceOf(from));
         ShibDistributor.setBalance(from, balanceOf(from));
 
+        // gain shib reward token 
         AkpDistributor.setBalance(to, balanceOf(to));
         ShibDistributor.setBalance(to, balanceOf(to));
     }
@@ -60,9 +75,14 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         // save gas
         address addr = msg.sender;
         checkout();
+
         IERC20(SKP).transferFrom(addr, address(this), amount);
         safeMint(addr, amount);
         SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
+        
+        addrStakedList[addr].List.push(StakedItem(
+            {StartAt: block.timestamp, Amount: amount})
+        ); 
         emit STAKE(addr, amount, block.timestamp);
         return;
     }
@@ -124,6 +144,8 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     // checkout period reward
     function checkout() public {
+        // need to wait next block 
+        require(lastBlockNumber < block.number, "wait a minute");
         // add locked
         uint reward = calculateStateReward();
         if(reward == 0) {
