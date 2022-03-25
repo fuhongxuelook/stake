@@ -19,6 +19,8 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
     address public constant SKP = 0x60450e4F1246fedb38F83062BCB2BebAab6d110B;
     address public SHIB = 0x8a9424745056Eb399FD19a0EC26A14316684e274;
 
+    // the akp address 
+    // akp is benefits
     address public AKP;
 
     uint public AKPMintAmount;
@@ -35,6 +37,7 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
     struct StakedItem {
         uint StartAt;
         uint Amount;
+        bool Redeemed;
     }
 
     struct StakedList {
@@ -74,14 +77,15 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
     function Stake(uint256 amount) external virtual override {
         // save gas
         address addr = msg.sender;
-        checkout();
 
         IERC20(SKP).transferFrom(addr, address(this), amount);
-        safeMint(addr, amount);
-        SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
         
+        safeMint(addr, amount);
+
+        SKPTotalStakedAmount = SKPTotalStakedAmount.add(amount);
+
         addrStakedList[addr].List.push(StakedItem(
-            {StartAt: block.timestamp, Amount: amount})
+            {StartAt: block.timestamp, Amount: amount, Redeemed: false})
         ); 
         emit STAKE(addr, amount, block.timestamp);
         return;
@@ -89,15 +93,63 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     // redeem all staked SKP Token
     function Redeem() external virtual override returns(uint) {
-        checkout();
         // save gas
         address addr = msg.sender;
+
+        // amount this time can redeem
+        uint amount = redeemFromList(addr);
+        require(amount > 0, "Time Not Reached!");
+        
         uint bal = balanceOf(addr);
-        safeBurn(addr, bal);
-        IERC20(SKP).transfer(addr, bal);
-        emit REDEEM(addr, bal, block.timestamp);
-        return bal;
+        require(bal >= amount, "amount exceed balance");
+
+        safeBurn(addr, amount);
+        IERC20(SKP).transfer(addr, amount);
+        emit REDEEM(addr, amount, block.timestamp);
+        return amount;
     }
+
+    // redeem from list
+    function redeemFromList(address addr) public returns(uint amount) {
+        //save gas
+        StakedItem[] memory list = addrStakedList[addr].List;
+        uint length = list.length;
+        require(length > 0, "didnt stake");
+
+        uint nowtime = block.timestamp;
+
+        for(uint i; i < length; i ++) {
+            if(
+                list[i].StartAt + staketime <= nowtime && 
+                !list[i].Redeemed
+                ) {
+                amount += list[i].Amount;
+                addrStakedList[addr].List[i].Redeemed = true;
+            }
+        }
+        return  amount;
+    }
+
+    // can redeem number
+    function amountCanRedeem(address addr) public view returns(uint amount) {
+        // save gas
+        StakedItem[] memory list = addrStakedList[addr].List;
+        
+        uint length = list.length;
+        require(length > 0, "didnt stake");
+
+        uint nowtime = block.timestamp;
+
+        for(uint i; i < length; i ++) {
+            if(list[i].StartAt + staketime <= nowtime &&
+                !list[i].Redeemed
+                ) {
+                amount += list[i].Amount; 
+            }
+        }
+        return  amount;
+
+    } 
 
     // set apy 
     function setTimeFactor(uint _tf) external onlyOwner {
