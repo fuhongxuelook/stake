@@ -153,7 +153,6 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
 
     // set apy 
     function setTimeFactor(uint _tf) external onlyOwner {
-        checkout();
         timeFactor = _tf;
     }
 
@@ -195,18 +194,17 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
     }
 
     // checkout period reward
-    function checkout() public {
+    function checkout(uint akpReward) public {
         // need to wait next block 
         require(lastBlockNumber < block.number, "wait a minute");
         // add locked
-        uint reward = calculateStateReward();
-        if(reward == 0) {
+        if(akpReward == 0) {
             return;
         }
-        bool success = IERC20(AKP).transfer(address(AkpDistributor), reward);
+        bool success = IERC20(AKP).transfer(address(AkpDistributor), akpReward);
         if (success) {
-            AKPMintAmount = AKPMintAmount.add(reward);
-            AkpDistributor.distributeTokenDividends(reward);
+            AKPMintAmount = AKPMintAmount.add(akpReward);
+            AkpDistributor.distributeTokenDividends(akpReward);
         }
 
         uint shibBalance = IERC20(SHIB).balanceOf(address(this));
@@ -218,6 +216,7 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         if (success) {
             ShibDistributor.distributeTokenDividends(shibBalance);
         }
+        lastBlockNumber = block.number;
     }
 
     // take back akp
@@ -226,22 +225,21 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         require(amount <= akpBal, "exceed balance");
 
         IERC20(AKP).transfer(msg.sender, amount);
-    }
+    }   
 
-    // calculate reward
-    function calculateStateReward() internal returns(uint256) {
-        uint nowtime = block.timestamp;
-        if(lastUpdateTime == 0) {
-            lastUpdateTime = nowtime;
-            return 0;
-        }
+    // function calculateStateReward() internal returns(uint256) {
+    //     uint nowtime = block.timestamp;
+    //     if(lastUpdateTime == 0) {
+    //         lastUpdateTime = nowtime;
+    //         return 0;
+    //     }
 
-        uint stakeTime = nowtime.sub(lastUpdateTime);
-        uint skpBal = IERC20(SKP).balanceOf(address(this));
+    //     uint stakeTime = nowtime.sub(lastUpdateTime);
+    //     uint skpBal = IERC20(SKP).balanceOf(address(this));
 
-        lastUpdateTime = nowtime;
-        return stakeTime.mul(skpBal).mul(timeFactor).div(rateBase);
-    }
+    //     lastUpdateTime = nowtime;
+    //     return stakeTime.mul(skpBal).mul(timeFactor).div(rateBase);
+    // }
 
     function getAKPTotalDistributed() external view returns (uint256) {
         return AkpDistributor.totalDividendsDistributed();
