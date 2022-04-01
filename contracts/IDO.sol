@@ -23,11 +23,17 @@ contract IDO is ERC20, Ownable {
 	// raise bnb
 	function raise() external payable {
 		uint amount = msg.value;
-
+		uint totalMint = totalSupply();
 		require(status, "Cant raised");
 		require(amount >= 0.5 ether && amount <= 1 ether, "ERROR: BNB Number Error");
 		require(balanceOf(msg.sender) == 0, "Error:has been raised!");
-		require(totalSupply() <= max, "Raised enougn" );
+		require(totalMint <= max, "Raised enougn" );
+
+		if (totalMint + amount > max) {
+			uint refund = max - totalMint;
+			payable(msg.sender).transfer(refund);
+			amount = amount - refund;
+		}
 
 		payable(recipient).transfer(msg.value);	
 
