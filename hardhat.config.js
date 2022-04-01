@@ -47,14 +47,6 @@ module.exports = {
       url: process.env.BSCTEST || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    rinkeby: {
-      url: process.env.RINKEBY || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-      gas:"auto",
-      gasPrice: "auto"
-
     }
 
   },
