@@ -6,8 +6,9 @@ import "./Distributor.sol";
 import "./LPManager.sol";
 import "./StakeInterface.sol";
 
-// state token
-contract StakeMonth is ERC20, Ownable, StakeInterface {
+// Mine AKP 
+// Lock A Month
+contract Mine is ERC20, Ownable, StakeInterface {
 
     using SafeMath for uint256;
     
@@ -156,6 +157,10 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         timeFactor = _tf;
     }
 
+    function currentStaked() external view returns(uint stakedAmount) {
+        return AkpDistributor.totalSupply();
+    }
+
     // mint AkpDistributor token to receive AKP
     function safeMint(address _account, uint256 _amount) internal {
         _mint(_account, _amount);
@@ -201,21 +206,25 @@ contract StakeMonth is ERC20, Ownable, StakeInterface {
         if(akpReward == 0) {
             return;
         }
+
+        //deal akp reward
         bool success = IERC20(AKP).transfer(address(AkpDistributor), akpReward);
         if (success) {
             AKPMintAmount = AKPMintAmount.add(akpReward);
             AkpDistributor.distributeTokenDividends(akpReward);
         }
 
+        // deal shib reward
         uint shibBalance = IERC20(SHIB).balanceOf(address(this));
         if(shibBalance == 0) {
             return;
         }
-
         success = IERC20(SHIB).transfer(address(ShibDistributor), shibBalance);
         if (success) {
             ShibDistributor.distributeTokenDividends(shibBalance);
         }
+
+
         lastBlockNumber = block.number;
     }
 
