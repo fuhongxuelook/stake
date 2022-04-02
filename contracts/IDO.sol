@@ -10,8 +10,8 @@ contract IDO is ERC20, Ownable {
 	address recipient = 0x1a763cD36f9EBF4012B8B1507b849DaB84F4F503;
 	
 	uint constant PRECISION = 10 ** 18;
-	uint public constant max = 500 * PRECISION;
-	bool public status;
+	uint public constant max = 400 * PRECISION;
+	bool public status = true;
 
 	constructor() ERC20("AKP-IDO", "AKP-IDO") {}
 
@@ -25,7 +25,7 @@ contract IDO is ERC20, Ownable {
 		uint amount = msg.value;
 		uint totalMint = totalSupply();
 		require(status, "Cant raised");
-		require(amount >= 0.5 ether && amount <= 1 ether, "ERROR: BNB Number Error");
+		require(amount >= 0.1 ether && amount <= 5 ether, "ERROR: BNB Number Error");
 		require(balanceOf(msg.sender) == 0, "Error:has been raised!");
 		require(totalMint <= max, "Raised enougn" );
 
