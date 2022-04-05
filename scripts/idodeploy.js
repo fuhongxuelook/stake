@@ -6,6 +6,11 @@
 const hre = require("hardhat");
 
 async function main() {
+
+  let provider = hre.ethers.provider;
+  let signer = provider.getSigner();
+  console.log(await signer.getAddress());
+  console.log(await signer.getBalance());
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -15,7 +20,7 @@ async function main() {
   await hre.run('compile');
 
 
-  const Obj = await hre.ethers.getContractFactory("IDO");
+  const Obj = await hre.ethers.getContractFactory("AKPIDO");
   const ido = await Obj.deploy();
 
   await ido.deployed();
