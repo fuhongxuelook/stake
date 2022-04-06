@@ -14,7 +14,10 @@ contract AKPIDO is ERC20Pausable, Ownable {
 	uint public constant max = 400 * PRECISION;
 	bool public status;
 
-	mapping(address => bool) WL;
+	uint raiseMin = 1 ether;
+	uint raiseMax = 2 ether;
+
+	mapping(address => bool) public WL;
 
 	constructor() ERC20("AKP-IDO", "AKP-IDO") {}
 
@@ -28,7 +31,7 @@ contract AKPIDO is ERC20Pausable, Ownable {
 		uint amount = msg.value;
 		uint totalMint = totalSupply();
 		require(status || WL[msg.sender], "Cant raised");
-		require(amount >= 0.1 ether && amount <= 5 ether, "ERROR: BNB Number Error");
+		require(amount >= raiseMin && amount <= raiseMax, "ERROR: BNB Number Error");
 		require(balanceOf(msg.sender) == 0, "Error:has been raised!");
 		require(totalMint <= max, "Raised enougn" );
 
@@ -84,10 +87,14 @@ contract AKPIDO is ERC20Pausable, Ownable {
     
 
 	function start() external onlyOwner {
+		raiseMin = 0.1 ether;
+		raiseMax = 5 ether;
 		status = true;
 	}
 
 	function end() external onlyOwner {
+		raiseMin = 1 ether;
+		raiseMax = 2 ether;
 		status = false;
 	}
 }

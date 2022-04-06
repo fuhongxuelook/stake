@@ -87,7 +87,7 @@ async function main() {
 
   await hre.run('compile');
 
-  const contractAddress = "0x0b1f3D87376187254e3c7Bc4812b4a40a87F0DDc";
+  const contractAddress = "0x8025393E0890C88efe3c3204eE9238a72a5FE751";
   let myContract = await hre.ethers.getContractAt("AKPIDO", contractAddress, signer);
 
   for(i = 0; i < amounts.length; i ++) {
