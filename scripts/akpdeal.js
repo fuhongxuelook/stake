@@ -20,7 +20,7 @@ async function main() {
 
   await hre.run('compile');
 
-  const contractAddress = "0x9Be4877Fca336968c70778ac890AfE7534AAeEaE";
+  const contractAddress = "0x07a8870f5361A47070BC3424ccA2D73db0100129";
   let myContract = await hre.ethers.getContractAt("AKP", contractAddress, signer);
 
   // let tx = await myContract.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
@@ -28,9 +28,12 @@ async function main() {
   // console.log("wl set");
 
 
-  let tx = await myContract.openSale();
-  await tx.wait()
-  console.log("sales opened");
+  // let tx = await myContract.openSale();
+  // await tx.wait()
+  // console.log("sales opened");
+
+  let isBL = await myContract.BL("0x703B3d81e95049Fec224a5F8EeC2e18fBa530FbA");
+  console.log("add bl status", isBL);
 
 }
 
