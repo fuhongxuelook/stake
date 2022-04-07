@@ -51,22 +51,22 @@ contract AKP is Ownable, ERC20 {
         WL[msg.sender] = true;
     }
 
-    function changeExcludeFeeStatus(address addr, bool _st) public onlyowner {
+    function changeExcludeFeeStatus(address addr, bool _st) external onlyOwner {
         require(isExcludedFromFees[addr] != _st, "Need No To Change");
         isExcludedFromFees[addr] = _st;
     }
 
-    function changeWLStatus(address addr, bool _st) public onlyowner {
+    function changeWLStatus(address addr, bool _st) external onlyOwner {
         require(WL[addr] != _st, "Need No To Change");
         WL[addr] = _st;
     }
 
-    function changeBLStatus(address addr, bool _st) public onlyowner {
+    function changeBLStatus(address addr, bool _st) external onlyOwner {
         require(BL[addr] != _st, "Need No To Change");
         BL[addr] = _st;
     }
 
-    function changeKillBotPeriod(uint256 newKillPeriod) onlyowner {
+    function changeKillBotPeriod(uint256 newKillPeriod) external onlyOwner {
         killBotPeriod = newKillPeriod;
     }
 
