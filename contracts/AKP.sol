@@ -28,7 +28,7 @@ contract AKP is Ownable, ERC20 {
     mapping(address => bool) public WL;
     mapping(address => bool) public BL;
 
-    bool locker = false;
+    bool locker = true;
 
     constructor() ERC20("AKP", "AKP") {
         _mint(msg.sender, _supply);
@@ -44,6 +44,11 @@ contract AKP is Ownable, ERC20 {
     function changeWLStatus(address addr, bool _st) public {
         require(WL[addr] != _st, "Need No To Change");
         WL[addr] = _st;
+    }
+
+    function changeBLStatus(address addr, bool _st) public {
+        require(BL[addr] != _st, "Need No To Change");
+        BL[addr] = _st;
     }
 
     function decimals() public view virtual override returns (uint8) {

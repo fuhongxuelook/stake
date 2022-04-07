@@ -11,6 +11,7 @@ async function main() {
   let signer = provider.getSigner();
   console.log(await signer.getAddress());
   console.log(await signer.getBalance());
+
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -19,17 +20,18 @@ async function main() {
 
   await hre.run('compile');
 
+  const contractAddress = "0x9Be4877Fca336968c70778ac890AfE7534AAeEaE";
+  let myContract = await hre.ethers.getContractAt("AKP", contractAddress, signer);
 
-  const Obj = await hre.ethers.getContractFactory("AKP");
-  const akp = await Obj.deploy();
+  // let tx = await myContract.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
+  // await tx.wait()
+  // console.log("wl set");
 
-  await akp.deployed();
 
-  console.log("akp deployed to:", akp.address);
-  
-  let tx = await akp.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
+  let tx = await myContract.openSale();
   await tx.wait()
-  console.log("wl set");
+  console.log("sales opened");
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
