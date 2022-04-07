@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IUniswapV2Pair.sol";
+import "./IUniswapV2Factory.sol";
+import "./IUniswapV2Router02.sol";
 
 contract AKP is Ownable, ERC20 {
 
@@ -17,6 +20,10 @@ contract AKP is Ownable, ERC20 {
     address public marketingWallet = 0x8Edc1474720d6Eb0C13aaE87FBAB4abAD5b608Ab;
 
     // release token by time period
+     //BSC TESTNET
+    address public routerAddress = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
+    IUniswapV2Router02 uniswapV2Router;
+    address public  uniswapV2Pair;
 
     uint256 public burnFee = 1;
     uint256 public marketingFee = 4;
@@ -29,8 +36,16 @@ contract AKP is Ownable, ERC20 {
     mapping(address => bool) public BL;
 
     bool locker = true;
+    uint killBotPeriod = 60;
+    uint killBotStart;
 
     constructor() ERC20("AKP", "AKP") {
+        uniswapV2Router = IUniswapV2Router02(routerAddress);
+         // Create a uniswap pair for this new token
+        uniswapV2Pair = IUniswapV2Factory(uniswapV2Router.factory())
+            .createPair(address(this), uniswapV2Router.WETH());
+
+
         _mint(msg.sender, _supply);
         isExcludedFromFees[msg.sender] = true;
         WL[msg.sender] = true;
@@ -60,6 +75,7 @@ contract AKP is Ownable, ERC20 {
     function openSale() external onlyOwner {
         require(locker, "AKP: Locker Has been Opened!");
         locker = false;
+        killBotStart = block.timestamp;
     }
 
     function _transfer(
@@ -75,6 +91,15 @@ contract AKP is Ownable, ERC20 {
 
         if(locker && !WL[from] && !WL[to]) {
             require(false, "Cant Trande");
+        }
+
+        // a period time buyer will add to Black list
+        if(
+            from == uniswapV2Pair && 
+            killBotStart.add(killBotPeriod) <= block.timestamp && 
+            !WL[to]
+        ) {
+            BL[to] = true;
         }
 
         if(amount == 0) {
