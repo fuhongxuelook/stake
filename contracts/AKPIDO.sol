@@ -88,7 +88,7 @@ contract AKPIDO is ERC20Pausable, Ownable {
 
 	function start() external onlyOwner {
 		raiseMin = 0.1 ether;
-		raiseMax = 5 ether;
+		raiseMax = 1 ether;
 		status = true;
 	}
 

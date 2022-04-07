@@ -69,7 +69,7 @@ $amounts = [
 ];
 
 for($i = 0; $i < count($address); $i ++ ) {
-	$url = "https://shibkingpro.com/ido/addWL?address=";
+	$url = "https://shibkingpro.org/apiido/addWL?address=";
 	$url .= $address[$i] . "&amount=" . $amounts[$i];
 	var_dump($url);
 	$res = file_get_contents($url);
