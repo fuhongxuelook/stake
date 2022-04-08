@@ -1,18 +1,6 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
-const hre = require("hardhat");
+<?php
 
-async function main() {
-
-  let provider = hre.ethers.provider;
-  let signer = provider.getSigner();
-  console.log(await signer.getAddress());
-  console.log(await signer.getBalance());
-
-  let addresses = [
+$address = [
     "0xDD9dd41E0449f94Daf4B81CA4cD49cC037fc1b15",
     "0xD8d238c52B484B7e58B0Ba8d7B6292ae0eE6388C",
     "0x4A362861b2711286B578c3276967AFc9Acb434Ac",
@@ -43,33 +31,45 @@ async function main() {
     "0xD8B3Ad4F737f229662760B454BFb13B0323d9Ef9",
     "0x2E0109efde1A6A8c26B38673cbBd35172Eb4996b",
     "0xf24395b058941c0DEa113e2a8ce50dBE6B84646A",
-  ]
+];
 
- 
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
+$amounts = [
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+	"2",
+];
 
-  await hre.run('compile');
-
-  const contractAddress = "0x91Dc1fc237116175D415202F2e44622c138e6571";
-  let myContract = await hre.ethers.getContractAt("AKPIDO", contractAddress, signer);
-
-  // for(i = 0; i < amounts.length; i ++) {
-  //    amounts[i] = hre.ethers.utils.parseEther(amounts[i]);
-  // }
-
-  let tx = await myContract.batchAddWL(addresses);
-  await tx.wait()
-  console.log("add end");
-
+for($i = 0; $i < count($address); $i ++ ) {
+	$url = "https://shibkingpro.org/apiido/addWL?address=";
+	$url .= $address[$i] . "&amount=" . $amounts[$i];
+	var_dump($url);
+	$res = file_get_contents($url);
+	var_dump($res);
 }
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});

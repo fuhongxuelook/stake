@@ -22,13 +22,20 @@ contract AKP is Ownable, ERC20 {
     // release token by time period
      //BSC TESTNET
     address public routerAddress = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
+    address USDT = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684;
+    bool swapping;
+
     IUniswapV2Router02 uniswapV2Router;
     address public  uniswapV2Pair;
 
     uint256 public burnFee = 1;
     uint256 public marketingFee = 4;
 
+    uint256 swapTokensAtAmount = 100_000 * DECIMAL;
+
     uint256 totalFee = burnFee.add(marketingFee);
+
+    event SetAutomatedMarketMakerPair(address indexed pair, bool indexed value);
 
 
     mapping(address => bool) public isExcludedFromFees;
@@ -39,16 +46,39 @@ contract AKP is Ownable, ERC20 {
     uint killBotPeriod = 60;
     uint killBotStart;
 
+    // store addresses that a automatic market maker pairs. Any transfer *to* these addresses
+    // could be subject to a maximum transfer amount
+    mapping (address => bool) public automatedMarketMakerPairs;
+
     constructor() ERC20("AKP", "AKP") {
         uniswapV2Router = IUniswapV2Router02(routerAddress);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(uniswapV2Router.factory())
             .createPair(address(this), uniswapV2Router.WETH());
 
+        _setAutomatedMarketMakerPair(uniswapV2Pair, true);
 
         _mint(msg.sender, _supply);
         isExcludedFromFees[msg.sender] = true;
         WL[msg.sender] = true;
+    }
+
+    function setAutomatedMarketMakerPair(address pair, bool value) public onlyOwner {
+        require(pair != uniswapV2Pair, "The swap pair cannot be removed from automatedMarketMakerPairs");
+
+        _setAutomatedMarketMakerPair(pair, value);
+    }
+
+    // set distribute number
+    function setSwapTokensAtAmount(uint _newAmount) public onlyOwner{
+        swapTokensAtAmount = _newAmount;
+    }
+    
+    function _setAutomatedMarketMakerPair(address pair, bool value) private {
+        require(automatedMarketMakerPairs[pair] != value, "Automated market maker pair is already set to that value");
+        automatedMarketMakerPairs[pair] = value;
+
+        emit SetAutomatedMarketMakerPair(pair, value);
     }
 
     function changeExcludeFeeStatus(address addr, bool _st) external onlyOwner {
@@ -99,7 +129,7 @@ contract AKP is Ownable, ERC20 {
 
         // a period time buyer will add to Black list
         if(
-            from == uniswapV2Pair && 
+            automatedMarketMakerPairs[from] && 
             killBotStart.add(killBotPeriod) >= block.timestamp && 
             !WL[to]
         ) {
@@ -111,7 +141,23 @@ contract AKP is Ownable, ERC20 {
             return;
         }
 
-        bool takeFee = true;
+        uint256 contractTokenBalance = balanceOf(address(this));
+
+        bool canSwap = contractTokenBalance >= swapTokensAtAmount;
+
+        if( canSwap &&
+            !swapping &&
+            !automatedMarketMakerPairs[from] &&
+            from != owner() &&
+            to != owner() 
+        ) {
+            swapping = true;
+            swapAndSendToFee(swapTokensAtAmount);
+            swapping = false;
+        }
+
+        bool takeFee = !swapping;
+
         // if any account belongs to _isExcludedFromFee account then remove the fee
         if(isExcludedFromFees[from] || isExcludedFromFees[to]) {
             takeFee = false;
@@ -135,7 +181,7 @@ contract AKP is Ownable, ERC20 {
                 marketingAmount = feeAmount.sub(burnAmount);
             }
             
-            super._transfer(from, marketingWallet, marketingAmount);
+            super._transfer(from, address(this), marketingAmount);
 
             amount = amount.sub(feeAmount);
         }
@@ -143,5 +189,41 @@ contract AKP is Ownable, ERC20 {
         super._transfer(from, to, amount);
        
     }
+
+    function swapAndSendToFee(uint256 tokens) private  {
+
+        if(tokens == 0) {
+            return;
+        }
+        swapTokensForUSDT(tokens);
+        uint256 usdtBalance = IERC20(USDT).balanceOf(address(this));
+
+        (bool b, ) = USDT.call(abi.encodeWithSignature("transfer(address,uint256)", marketingWallet, usdtBalance));
+        require(b, "call error");
+    }
+
+
+    function swapTokensForUSDT(uint256 tokenAmount) private {
+        if(tokenAmount == 0) {
+            return;
+        }
+
+        address[] memory path = new address[](3);
+        path[0] = address(this);
+        path[1] = uniswapV2Router.WETH();
+        path[2] = USDT;
+
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
+
+        // make the swap
+        uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            tokenAmount,
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
+    }
+
    
 }

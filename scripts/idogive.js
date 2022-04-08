@@ -45,7 +45,38 @@ async function main() {
     "0xf24395b058941c0DEa113e2a8ce50dBE6B84646A",
   ]
 
- 
+  let amounts = [
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+  ]
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -57,13 +88,13 @@ async function main() {
   const contractAddress = "0x91Dc1fc237116175D415202F2e44622c138e6571";
   let myContract = await hre.ethers.getContractAt("AKPIDO", contractAddress, signer);
 
-  // for(i = 0; i < amounts.length; i ++) {
-  //    amounts[i] = hre.ethers.utils.parseEther(amounts[i]);
-  // }
+  for(i = 0; i < amounts.length; i ++) {
+     amounts[i] = hre.ethers.utils.parseEther(amounts[i]);
+  }
 
-  let tx = await myContract.batchAddWL(addresses);
+  let tx = await myContract.batchGiveAkp(addresses, amounts);
   await tx.wait()
-  console.log("add end");
+  console.log("set end");
 
 }
 
