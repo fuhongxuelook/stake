@@ -17,16 +17,10 @@ contract AKP is Ownable, ERC20 {
     uint maximumBurnAmount = _supply.sub(1_000_000 * DECIMAL);
 
     address public deadWallet = 0x000000000000000000000000000000000000dEaD;
-    address public marketingWallet = 0x0cadE6e839026eC53CCDb17B43b79d5B9945fD16;
+    address public marketingWallet = 0x2d78e5905045b2B3bE56cA21DACdDF4a7a72a88a;
 
-    // release token by time period
-    // bsc main
-    // address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    // address USDT = 0x55d398326f99059fF775485246999027B3197955;
-
-    // bsc test
-    address public routerAddress = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
-    address public USDT = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684;
+    address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
+    address USDT = 0x55d398326f99059fF775485246999027B3197955;
 
     bool swapping;
 
@@ -41,7 +35,6 @@ contract AKP is Ownable, ERC20 {
     uint256 totalFee = burnFee.add(marketingFee);
 
     event SetAutomatedMarketMakerPair(address indexed pair, bool indexed value);
-
 
     mapping(address => bool) public isExcludedFromFees;
     mapping(address => bool) public BL;
@@ -96,15 +89,6 @@ contract AKP is Ownable, ERC20 {
     function changeExcludeFeeStatus(address addr, bool _st) public onlyOwner {
         require(isExcludedFromFees[addr] != _st, "Need No To Change");
         isExcludedFromFees[addr] = _st;
-    }
-
-    function changeBLStatus(address addr, bool _st) external onlyOwner {
-        require(BL[addr] != _st, "Need No To Change");
-        BL[addr] = _st;
-    }
-
-    function changeKillBotPeriod(uint256 newKillPeriod) external onlyOwner {
-        killBotPeriod = newKillPeriod;
     }
 
     function decimals() public view virtual override returns (uint8) {

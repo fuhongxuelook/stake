@@ -36,7 +36,6 @@ contract AKP is Ownable, ERC20 {
 
     event SetAutomatedMarketMakerPair(address indexed pair, bool indexed value);
 
-
     mapping(address => bool) public isExcludedFromFees;
     mapping(address => bool) public BL;
 
@@ -90,15 +89,6 @@ contract AKP is Ownable, ERC20 {
     function changeExcludeFeeStatus(address addr, bool _st) public onlyOwner {
         require(isExcludedFromFees[addr] != _st, "Need No To Change");
         isExcludedFromFees[addr] = _st;
-    }
-
-    function changeBLStatus(address addr, bool _st) external onlyOwner {
-        require(BL[addr] != _st, "Need No To Change");
-        BL[addr] = _st;
-    }
-
-    function changeKillBotPeriod(uint256 newKillPeriod) external onlyOwner {
-        killBotPeriod = newKillPeriod;
     }
 
     function decimals() public view virtual override returns (uint8) {
