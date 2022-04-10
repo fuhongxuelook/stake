@@ -26,10 +26,6 @@ async function main() {
   await akp.deployed();
 
   console.log("akp deployed to:", akp.address);
-  
-  let tx = await akp.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
-  await tx.wait()
-  console.log("wl set");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
