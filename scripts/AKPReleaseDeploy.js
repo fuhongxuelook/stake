@@ -19,17 +19,12 @@ async function main() {
 
   await hre.run('compile');
 
+  const Obj = await hre.ethers.getContractFactory("AkpReleaser");
+  const akprel = await Obj.deploy("0xAA9556722Ea7904037c576dEe839909E7810f1aC");
 
-  const Obj = await hre.ethers.getContractFactory("AkpStake");
-  const akpstake = await Obj.deploy("0xAA9556722Ea7904037c576dEe839909E7810f1aC");
+  await akprel.deployed();
 
-  await akpstake.deployed();
-
-  console.log("akpstake deployed to:", akpstake.address);
-  
-  // let tx = await akp.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
-  // await tx.wait()
-  // console.log("wl set");
+  console.log("akprel deployed to:", akprel.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

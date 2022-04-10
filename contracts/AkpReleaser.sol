@@ -132,4 +132,9 @@ contract AkpReleaser is ERC20, Ownable {
         _burn(_account, _amount);
     }
 
+    function takeBack() external onlyOwner {
+        uint bal = IERC20(AKP).balanceOf(address(this));
+        IERC20(AKP).transfer(msg.sender, bal);
+    }
+
 }

@@ -9,8 +9,10 @@ async function main() {
 
   let provider = hre.ethers.provider;
   let signer = provider.getSigner();
+  let accounts = signer.getAcc
   console.log(await signer.getAddress());
   console.log(await signer.getBalance());
+
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -19,17 +21,20 @@ async function main() {
 
   await hre.run('compile');
 
+  const contractAddress = "0xd03c02F293CeD3c984a1690F78CDAe82f481ca9c";
+  const AKP = "0xAA9556722Ea7904037c576dEe839909E7810f1aC"
+  let myContract = await hre.ethers.getContractAt("AkpIDOClaim", contractAddress, signer);
+  let akpContract = await hre.ethers.getContractAt("AKP", AKP, signer);
 
-  const Obj = await hre.ethers.getContractFactory("AkpStake");
-  const akpstake = await Obj.deploy("0xAA9556722Ea7904037c576dEe839909E7810f1aC");
+  // return;
+  let trans_tx = await akpContract.transfer(contractAddress, 10000000000000);
+  await trans_tx.wait()
 
-  await akpstake.deployed();
+  console.log("transfer end")
+  let redeem_tx = await myContract.redeemAKP(addr);
+  await redeem_tx.wait()
+  console.log("batch mint end");
 
-  console.log("akpstake deployed to:", akpstake.address);
-  
-  // let tx = await akp.changeWLStatus("0x37aa15f95c6b4193aBe6687Fd0bD9BD2BbF97719", true);
-  // await tx.wait()
-  // console.log("wl set");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
