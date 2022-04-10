@@ -8,7 +8,7 @@ import "./IUniswapV2Pair.sol";
 import "./IUniswapV2Factory.sol";
 import "./IUniswapV2Router02.sol";
 
-contract AKPLOCK is Ownable, ERC20 {
+contract AKP is Ownable, ERC20 {
 
     using SafeMath for uint256;
 
@@ -39,7 +39,7 @@ contract AKPLOCK is Ownable, ERC20 {
     mapping(address => bool) public isExcludedFromFees;
     mapping(address => bool) public BL;
 
-    uint killBotPeriod = 60;
+    uint killBotPeriod = 30;
     uint killBotStart;
 
     // store addresses that a automatic market maker pairs. Any transfer *to* these addresses

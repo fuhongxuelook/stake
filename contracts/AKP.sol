@@ -8,7 +8,7 @@ import "./IUniswapV2Pair.sol";
 import "./IUniswapV2Factory.sol";
 import "./IUniswapV2Router02.sol";
 
-contract AKP is Ownable, ERC20 {
+contract AKP_Test is Ownable, ERC20 {
 
     using SafeMath for uint256;
 

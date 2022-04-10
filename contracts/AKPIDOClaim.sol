@@ -14,12 +14,23 @@ contract AkpIDOClaim is Ownable {
 	uint public totalRedeemedTimes;
 	uint public totalRedeemedAmount;
 
+	uint price = 200_000;
+
+	bool canClaim;
+
+	mapping(address => bool) redeemed;
+
 	constructor(address _akp, address _ido) {
 		akp = _akp;
 		ido = _ido;
 	}
 
 	receive() external payable {}
+
+	function setClaimStatus(bool _st) external onlyOwner{
+		require(canClaim != _st, "Error: status Need not change");
+		canClaim = _st;
+	}
 
 
 	function getIDOBalance(address addr) public view returns(uint256) {
@@ -34,10 +45,13 @@ contract AkpIDOClaim is Ownable {
 	function redeemAKP(uint amount) public  {
 		address addr = msg.sender;
 		uint bal = getIDOBalance(addr);
-		require(bal >= amount * 1_000_000_000);
-	 	IERC20(akp).transfer(addr, amount);
+		require(canClaim, "Error: Cant Claim");
+		require(bal >= amount * 1_000_000_000, "ERROR: Amount Error");
+		require(!redeemed[addr], "ERROR: address has been redeemed");
+	 	IERC20(akp).transfer(addr, amount * price);
 	 	totalRedeemedTimes ++;
 	 	totalRedeemedAmount += amount;
+	 	redeemed[addr] = true;
 	}
 
 	function takeBack() external onlyOwner {
