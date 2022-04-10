@@ -9,6 +9,7 @@ async function main() {
 
   let provider = hre.ethers.provider;
   let signer = provider.getSigner();
+  let accounts = signer.getAcc
   console.log(await signer.getAddress());
   console.log(await signer.getBalance());
 

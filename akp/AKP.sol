@@ -20,8 +20,14 @@ contract AKP is Ownable, ERC20 {
     address public marketingWallet = 0x0cadE6e839026eC53CCDb17B43b79d5B9945fD16;
 
     // release token by time period
-    address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    address USDT = 0x55d398326f99059fF775485246999027B3197955;
+    // bsc main
+    // address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
+    // address USDT = 0x55d398326f99059fF775485246999027B3197955;
+
+    // bsc test
+    address public routerAddress = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
+    address public USDT = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684;
+
     bool swapping;
 
     IUniswapV2Router02 uniswapV2Router;
@@ -38,10 +44,8 @@ contract AKP is Ownable, ERC20 {
 
 
     mapping(address => bool) public isExcludedFromFees;
-    mapping(address => bool) public WL;
     mapping(address => bool) public BL;
 
-    bool locker = true;
     uint killBotPeriod = 60;
     uint killBotStart;
 
@@ -59,7 +63,6 @@ contract AKP is Ownable, ERC20 {
 
         _mint(msg.sender, _supply);
         isExcludedFromFees[msg.sender] = true;
-        WL[msg.sender] = true;
     }
 
     function setAutomatedMarketMakerPair(address pair, bool value) public onlyOwner {
@@ -80,14 +83,19 @@ contract AKP is Ownable, ERC20 {
         emit SetAutomatedMarketMakerPair(pair, value);
     }
 
-    function changeExcludeFeeStatus(address addr, bool _st) external onlyOwner {
-        require(isExcludedFromFees[addr] != _st, "Need No To Change");
-        isExcludedFromFees[addr] = _st;
+    function batchChangeExFeeStatus(
+        address[] memory addrs, 
+        bool[] memory _sts) 
+    external onlyOwner {
+        uint lenAddr = addrs.length;
+        for(uint256 i; i < lenAddr; i ++) {
+            changeExcludeFeeStatus(addrs[i], _sts[i]);
+        }
     }
 
-    function changeWLStatus(address addr, bool _st) external onlyOwner {
-        require(WL[addr] != _st, "Need No To Change");
-        WL[addr] = _st;
+    function changeExcludeFeeStatus(address addr, bool _st) public onlyOwner {
+        require(isExcludedFromFees[addr] != _st, "Need No To Change");
+        isExcludedFromFees[addr] = _st;
     }
 
     function changeBLStatus(address addr, bool _st) external onlyOwner {
@@ -103,14 +111,6 @@ contract AKP is Ownable, ERC20 {
         return 9;
     }
 
-    // open trade lock
-    // just run once
-    function openSale() external onlyOwner {
-        require(locker, "AKP: Locker Has been Opened!");
-        locker = false;
-        killBotStart = block.timestamp;
-    }
-
     function _transfer(
         address from,
         address to,
@@ -122,15 +122,14 @@ contract AKP is Ownable, ERC20 {
         // ban black list trade
         require(!BL[from] && !BL[to], "Black list address");
 
-        if(locker && !WL[from] && !WL[to]) {
-            require(false, "Cant Trande");
+        if(killBotStart == 0 && automatedMarketMakerPairs[to]) {
+            killBotStart = block.timestamp;
         }
 
         // a period time buyer will add to Black list
         if(
             automatedMarketMakerPairs[from] && 
-            killBotStart.add(killBotPeriod) >= block.timestamp && 
-            !WL[to]
+            killBotStart.add(killBotPeriod) >= block.timestamp 
         ) {
             BL[to] = true;
         }
