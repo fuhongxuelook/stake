@@ -31,9 +31,10 @@ contract AkpIDOClaim is Ownable {
 	}
 
 
-	function redeemAKP() public  {
+	function redeemAKP(uint amount) public  {
 		address addr = msg.sender;
-		uint amount = getIDOBalance(addr);
+		uint bal = getIDOBalance(addr);
+		require(bal >= amount * 1_000_000_000);
 	 	IERC20(akp).transfer(addr, amount);
 	 	totalRedeemedTimes ++;
 	 	totalRedeemedAmount += amount;

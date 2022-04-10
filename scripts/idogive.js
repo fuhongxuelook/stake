@@ -25,7 +25,7 @@ async function main() {
     // "0x317Fc5A5DFf51908f9daAEe869f9761713bdA0D9",
     // "0xb5eD84660Ec80DDa959521c54035215d0169173B",
     // "0xA4E0BCB3356f39eE76319767a0Da0948AE7C0D14",
-     "0xFe8C22DAc3bAaFBF76583bC559904DAb9E4C46C9",
+     "0xb854e5aD1b58C9e93b0e2853883d88F43FE5F205",
     // "0xC67dcD7E51fdbfA321e22410EcA216d355b8e04b",
     // "0xF4C24AFD10AB25364264835D42073dca54e9051b",
     // "0xcF0f756df777283F97cEE0C07EfB91C20f81c2E0",
@@ -65,7 +65,7 @@ async function main() {
 
   await hre.run('compile');
 
-  const contractAddress = "0x91Dc1fc237116175D415202F2e44622c138e6571";
+  const contractAddress = "0x129C4a9fc029a5a6c6B1d2A06bCdE1AA07669219";
   let myContract = await hre.ethers.getContractAt("AKPIDO", contractAddress, signer);
 
   for(i = 0; i < amounts.length; i ++) {

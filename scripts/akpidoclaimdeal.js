@@ -9,7 +9,6 @@ async function main() {
 
   let provider = hre.ethers.provider;
   let signer = provider.getSigner();
-  let accounts = signer.getAcc
   console.log(await signer.getAddress());
   console.log(await signer.getBalance());
 
@@ -21,19 +20,36 @@ async function main() {
 
   await hre.run('compile');
 
-  const contractAddress = "0xd03c02F293CeD3c984a1690F78CDAe82f481ca9c";
+  const contractAddress = "0x68d257DcB2Ea519EF5d1b3E9F3045CC435d8d0F5";
   const AKP = "0xAA9556722Ea7904037c576dEe839909E7810f1aC"
   let myContract = await hre.ethers.getContractAt("AkpIDOClaim", contractAddress, signer);
   let akpContract = await hre.ethers.getContractAt("AKP", AKP, signer);
+  const ido = "0x129C4a9fc029a5a6c6B1d2A06bCdE1AA07669219";
+  let idoContract = await hre.ethers.getContractAt("AKPIDO", ido, signer);
 
+  let bal = await idoContract.balanceOf("0xb854e5aD1b58C9e93b0e2853883d88F43FE5F205")
+  console.log("ido number", bal);
   // return;
-  let trans_tx = await akpContract.transfer(contractAddress, 10000000000000);
+  let akpamount = await myContract.getIDOBalance("0xb854e5aD1b58C9e93b0e2853883d88F43FE5F205")
+  console.log("akp akpamount", akpamount);
+
+  let redeemAmount = (akpamount/1e9).toFixed(0);
+  let leftbal = await myContract.leftBalance();
+  console.log("left bal", leftbal);
+
+  let akpaddr = await myContract.akp();
+  console.log("akp", akpaddr);
+
+  let trans_tx = await akpContract.transfer(
+    contractAddress, 
+    (bal/1e9).toFixed(0)
+  );
   await trans_tx.wait()
 
   console.log("transfer end")
-  let redeem_tx = await myContract.redeemAKP(addr);
+  let redeem_tx = await myContract.redeemAKP(redeemAmount);
   await redeem_tx.wait()
-  console.log("batch mint end");
+  console.log("redeemed end");
 
 }
 
