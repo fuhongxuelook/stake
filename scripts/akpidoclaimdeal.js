@@ -20,12 +20,22 @@ async function main() {
 
   await hre.run('compile');
 
-  const contractAddress = "0x3aeE34aA6508fB612E39549a4bAD9317D1d16400";
-  const AKP = "0xAA9556722Ea7904037c576dEe839909E7810f1aC"
+  const contractAddress = "0x2e4f4bDC8441f8f98c7058760A2ED89149624A9E";
+  const AKP = "0x1b87f3201057263a6C4ED7Bf633aBF98E7Bd396d"
   let myContract = await hre.ethers.getContractAt("AkpIDOClaim", contractAddress, signer);
   let akpContract = await hre.ethers.getContractAt("AKP", AKP, signer);
-  const ido = "0x129C4a9fc029a5a6c6B1d2A06bCdE1AA07669219";
+  const ido = "0x91Dc1fc237116175D415202F2e44622c138e6571";
   let idoContract = await hre.ethers.getContractAt("AKPIDO", ido, signer);
+
+
+  let akp_amount = await akpContract.balanceOf(contractAddress);
+  console.log("akp", akp_amount);
+
+
+  let akp_addr = await myContract.akp();
+  console.log("akp", akp_amount);
+
+  return;
 
   let bal = await idoContract.balanceOf("0xb854e5aD1b58C9e93b0e2853883d88F43FE5F205")
   console.log("ido number", bal);
@@ -33,9 +43,9 @@ async function main() {
   let akpamount = await myContract.getIDOBalance("0xb854e5aD1b58C9e93b0e2853883d88F43FE5F205")
   console.log("akp akpamount", akpamount);
 
-  let set_tx = await myContract.setClaimStatus(true);
-  await set_tx.wait();
-  console.log("set end");
+  // let set_tx = await myContract.setClaimStatus(true);
+  // await set_tx.wait();
+  // console.log("set end");
 
   let redeemAmount = (akpamount/1e9).toFixed(0);
   let leftbal = await myContract.leftBalance();
@@ -44,16 +54,17 @@ async function main() {
   let akpaddr = await myContract.akp();
   console.log("akp", akpaddr);
 
+  //10000000_000000000
   let trans_tx = await akpContract.transfer(
     contractAddress, 
-    ((bal * 200000)/1e9).toFixed(0) 
+    (10000000 * 1e9).toString()
   );
   await trans_tx.wait()
 
-  console.log("transfer end")
-  let redeem_tx = await myContract.redeemAKP(redeemAmount);
-  await redeem_tx.wait()
-  console.log("redeemed end");
+  // console.log("transfer end")
+  // let redeem_tx = await myContract.redeemAKP(redeemAmount);
+  // await redeem_tx.wait()
+  // console.log("redeemed end");
 
 }
 

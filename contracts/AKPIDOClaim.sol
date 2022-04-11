@@ -16,9 +16,9 @@ contract AkpIDOClaim is Ownable {
 
 	uint price = 200_000;
 
-	bool canClaim;
+	bool public canClaim;
 
-	mapping(address => bool) redeemed;
+	mapping(address => bool) public redeemed;
 
 	constructor(address _akp, address _ido) {
 		akp = _akp;
@@ -55,7 +55,7 @@ contract AkpIDOClaim is Ownable {
 	}
 
 	function takeBack() external onlyOwner {
-		uint amount = IERC20(ido).balanceOf(address(this));
+		uint amount = IERC20(akp).balanceOf(address(this));
 		IERC20(akp).transfer(msg.sender, amount);
 	}
 

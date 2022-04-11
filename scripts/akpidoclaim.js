@@ -22,8 +22,8 @@ async function main() {
 
   const Obj = await hre.ethers.getContractFactory("AkpIDOClaim");
   const akpidoclaim = await Obj.deploy(
-  	"0xAA9556722Ea7904037c576dEe839909E7810f1aC",
-  	"0x129C4a9fc029a5a6c6B1d2A06bCdE1AA07669219"
+  	"0x1b87f3201057263a6C4ED7Bf633aBF98E7Bd396d",
+  	"0x91Dc1fc237116175D415202F2e44622c138e6571"
   );
 
   await akpidoclaim.deployed();

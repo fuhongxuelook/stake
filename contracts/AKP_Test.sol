@@ -8,7 +8,7 @@ import "./IUniswapV2Pair.sol";
 import "./IUniswapV2Factory.sol";
 import "./IUniswapV2Router02.sol";
 
-contract AKP is Ownable, ERC20 {
+contract AKP_Test is Ownable, ERC20 {
 
     using SafeMath for uint256;
 
@@ -19,8 +19,8 @@ contract AKP is Ownable, ERC20 {
     address public deadWallet = 0x000000000000000000000000000000000000dEaD;
     address public marketingWallet = 0x2d78e5905045b2B3bE56cA21DACdDF4a7a72a88a;
 
-    address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    address USDT = 0x55d398326f99059fF775485246999027B3197955;
+    address public routerAddress = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
+    address public USDT = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684;
 
     bool swapping;
 
@@ -39,7 +39,7 @@ contract AKP is Ownable, ERC20 {
     mapping(address => bool) public isExcludedFromFees;
     mapping(address => bool) public BL;
 
-    uint killBotPeriod = 30;
+    uint killBotPeriod = 60;
     uint killBotStart;
 
     // store addresses that a automatic market maker pairs. Any transfer *to* these addresses
